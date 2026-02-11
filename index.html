@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>For My Forever Love ❤️</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    color: white;
+    background: linear-gradient(-45deg, #ff6a88, #ff99ac, #c471f5, #7f00ff);
+    background-size: 400% 400%;
+    animation: gradientMove 12s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.container {
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: auto;
+}
+
+.nameStyle {
+    font-family: 'Great Vibes', cursive;
+    font-size: 70px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.questionText {
+    font-size: 26px;
+    line-height: 1.8;
+    margin-top: 10px;
+}
+
+button {
+    padding: 14px 32px;
+    font-size: 18px;
+    border: none;
+    border-radius: 40px;
+    margin: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 600;
+}
+
+.yes {
+    background: #ff4e88;
+    color: white;
+}
+
+.yes:hover {
+    transform: scale(1.1);
+}
+
+.no {
+    background: #5f27cd;
+    color: white;
+    position: absolute;
+}
+
+.finalImage {
+    display: block;
+    margin: 40px auto;
+    max-width: 90%;
+    height: auto;
+    border-radius: 25px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+</style>
+</head>
+
+<body>
+
+<audio id="bgMusic" loop>
+    <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<canvas id="fireworks"></canvas>
+
+<div class="container">
+    <div id="question"></div>
+    <div id="buttons">
+        <button class="yes" onclick="nextQuestion()">Yes My Love 💕</button>
+        <button class="no" id="noBtn">No 🙈</button>
+    </div>
+</div>
+
+<script>
+
+const music = document.getElementById("bgMusic");
+
+// Get name from URL
+const params = new URLSearchParams(window.location.search);
+let herName = params.get("name") || "My Love";
+
+// Capitalize properly
+herName = herName.split(" ")
+                 .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                 .join(" ");
+
+const questionBox = document.getElementById("question");
+
+questionBox.innerHTML =
+    `<span class="nameStyle">${herName} ❤️</span>
+     <div class="questionText">
+        Are you ready for something magical?
+     </div>`;
+
+const questions = [
+    `Do you know how special you are to me, ${herName}? ✨`,
+    `You are my peace and my happiness 💕`,
+    `Will you stay beside me forever? 🌸`,
+    `Can I love you more every single day? 💖`,
+    `Will You Be My Forever Valentine, ${herName}? 💍❤️`
+];
+
+let current = 0;
+
+function nextQuestion() {
+
+    if (current === 0) {
+        music.play();
+    }
+
+    current++;
+
+    if (current < questions.length) {
+        questionBox.innerHTML =
+            `<span class="nameStyle">${herName} ❤️</span>
+             <div class="questionText">
+                ${questions[current]}
+             </div>`;
+    } else {
+        questionBox.innerHTML =
+            `<span class="nameStyle">${herName} ❤️</span>
+             <div class="questionText">
+                I Love You Forever 💖<br>
+                You Are My Everything ✨
+             </div>
+             <img src="wife.jpg" class="finalImage">`;
+
+        document.getElementById("buttons").style.display = "none";
+        startFireworks();
+    }
+}
+
+// Moving No Button
+const noBtn = document.getElementById("noBtn");
+noBtn.addEventListener("mouseover", function() {
+    const x = Math.random() * (window.innerWidth - 120);
+    const y = Math.random() * (window.innerHeight - 120);
+    noBtn.style.left = x + "px";
+    noBtn.style.top = y + "px";
+});
+
+// Fireworks
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+function startFireworks() {
+
+    setInterval(() => {
+
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height / 2;
+
+        for (let i = 0; i < 80; i++) {
+
+            const angle = Math.random() * 2 * Math.PI;
+            const speed = Math.random() * 5 + 2;
+
+            const particle = {
+                x: x,
+                y: y,
+                dx: Math.cos(angle) * speed,
+                dy: Math.sin(angle) * speed,
+                life: 60
+            };
+
+            animateParticle(particle);
+        }
+
+    }, 1000);
+}
+
+function animateParticle(p) {
+
+    function update() {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        p.x += p.dx;
+        p.y += p.dy;
+        p.life--;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = `hsl(${Math.random()*360},100%,60%)`;
+        ctx.fill();
+
+        if (p.life > 0) {
+            requestAnimationFrame(update);
+        }
+    }
+
+    update();
+}
+
+</script>
+
+</body>
+</html>
