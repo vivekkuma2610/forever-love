@@ -108,11 +108,9 @@ canvas {
 
 const music = document.getElementById("bgMusic");
 
-// Get name from URL
 const params = new URLSearchParams(window.location.search);
 let herName = params.get("name") || "My Love";
 
-// Capitalize properly
 herName = herName.split(" ")
                  .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                  .join(" ");
@@ -122,14 +120,14 @@ const questionBox = document.getElementById("question");
 questionBox.innerHTML =
     `<span class="nameStyle">${herName} ❤️</span>
      <div class="questionText">
-        Hey Parkavi Are you ready for something magical?
+        Hey ${herName}, Are you ready for something magical?
      </div>`;
 
 const questions = [
     `Do you know how special you are to me, ${herName}? ✨`,
     `Do You promise to grow old with me 💕`,
     `Will you stay beside me forever? 🌸`,
-    `will you love me more every single day? 💖`,
+    `Will you love me more every single day? 💖`,
     `Will You Be My Forever Valentine, ${herName}? 💍❤️`
 ];
 
@@ -163,16 +161,42 @@ function nextQuestion() {
     }
 }
 
-// Moving No Button
+//////////////////////////////
+// FUNNY MOVING NO BUTTON
+//////////////////////////////
+
 const noBtn = document.getElementById("noBtn");
+
+const funnyTexts = [
+    "Vendam 🙅‍♀️",
+    "Vendam nu sonna vida maata 😭",
+    "Athan solran la adanga maata 😤",
+    "Vendam valikuthu 😵",
+    "Please daaa vendam 🥺",
+    "Enna torture panra 😩",
+    "No nu sonna kekka maatiya 😅"
+];
+
+let textIndex = 0;
+
 noBtn.addEventListener("mouseover", function() {
-    const x = Math.random() * (window.innerWidth - 120);
-    const y = Math.random() * (window.innerHeight - 120);
+
+    // Change text in loop
+    noBtn.innerText = funnyTexts[textIndex];
+    textIndex = (textIndex + 1) % funnyTexts.length;
+
+    // Move randomly
+    const x = Math.random() * (window.innerWidth - 200);
+    const y = Math.random() * (window.innerHeight - 100);
+
     noBtn.style.left = x + "px";
     noBtn.style.top = y + "px";
 });
 
-// Fireworks
+//////////////////////////////
+// FIREWORKS
+//////////////////////////////
+
 const canvas = document.getElementById("fireworks");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
