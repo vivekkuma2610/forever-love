@@ -14,29 +14,29 @@ body {
     text-align: center;
     color: white;
     overflow: hidden;
+    background: black; /* fallback (never white) */
 }
 
-/* Background Layer */
+/* Background with default image (NO WHITE FLASH) */
 .bg-image {
     position: fixed;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
+    background-image: url('bg1.jpg'); /* first image loads immediately */
     background-size: cover;
     background-position: center;
     filter: blur(8px) brightness(0.6);
     transition: background-image 1s ease-in-out;
-    z-index: -2;
+    z-index: -3;
 }
 
-/* White overlay for softness */
+/* Soft overlay */
 .overlay {
     position: fixed;
     width: 100%;
     height: 100%;
     background: rgba(255,255,255,0.15);
-    z-index: -1;
+    z-index: -2;
 }
 
 .container {
@@ -44,21 +44,18 @@ body {
     max-width: 900px;
     margin: auto;
     position: relative;
-    z-index: 2;
+    z-index: 5;
 }
 
 .nameStyle {
     font-family: 'Great Vibes', cursive;
     font-size: 70px;
-    margin-bottom: 15px;
-    display: block;
 }
 
 .questionText {
     font-size: 26px;
     line-height: 1.8;
-    margin-top: 10px;
-    text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
+    text-shadow: 2px 2px 15px rgba(0,0,0,0.9);
 }
 
 button {
@@ -68,7 +65,6 @@ button {
     border-radius: 40px;
     margin: 15px;
     cursor: pointer;
-    transition: 0.3s;
     font-weight: 600;
 }
 
@@ -77,23 +73,10 @@ button {
     color: white;
 }
 
-.yes:hover {
-    transform: scale(1.1);
-}
-
 .no {
     background: #5f27cd;
     color: white;
     position: absolute;
-}
-
-.finalImage {
-    display: block;
-    margin: 40px auto;
-    max-width: 90%;
-    height: auto;
-    border-radius: 25px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
 }
 
 canvas {
@@ -101,6 +84,19 @@ canvas {
     top: 0;
     left: 0;
     pointer-events: none;
+    z-index: 1;
+}
+
+/* Floating heart balloons */
+.heart {
+    position: fixed;
+    bottom: -50px;
+    animation: floatUp 8s linear infinite;
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-110vh); opacity: 0; }
 }
 
 </style>
@@ -127,17 +123,8 @@ canvas {
 
 <script>
 
-const music = document.getElementById("bgMusic");
 const bgImage = document.getElementById("bgImage");
-
-const params = new URLSearchParams(window.location.search);
-let herName = params.get("name") || "My Love";
-
-herName = herName.split(" ")
-                 .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                 .join(" ");
-
-const questionBox = document.getElementById("question");
+const music = document.getElementById("bgMusic");
 
 /* Background Images */
 const backgrounds = [
@@ -149,8 +136,23 @@ const backgrounds = [
     "bg6.jpg"
 ];
 
-/* Questions */
+/* PRELOAD images for smooth transitions */
+backgrounds.forEach(src => {
+    const img = new Image();
+    img.src = src;
+});
+
+const params = new URLSearchParams(window.location.search);
+let herName = params.get("name") || "My Love";
+
+herName = herName.split(" ")
+                 .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                 .join(" ");
+
+const questionBox = document.getElementById("question");
+
 const questions = [
+    `Hey ${herName}, Are you ready for something magical?`,
     `Do you know how special you are to me, ${herName}? ✨`,
     `Do You promise to grow old with me 💕`,
     `Will you stay beside me forever? 🌸`,
@@ -160,123 +162,95 @@ const questions = [
 
 let current = 0;
 
-/* Initial Content */
-updateContent();
+/* Set first question */
+updateQuestion();
 
-function updateContent() {
-
-    bgImage.style.backgroundImage = `url('${backgrounds[current]}')`;
-
-    if (current < questions.length) {
-        questionBox.innerHTML =
-            `<span class="nameStyle">${herName} ❤️</span>
-             <div class="questionText">
-                ${current === 0 
-                    ? `Hey ${herName}, Are you ready for something magical?`
-                    : questions[current]}
-             </div>`;
-    }
+function updateQuestion() {
+    questionBox.innerHTML =
+        `<span class="nameStyle">${herName} ❤️</span>
+         <div class="questionText">${questions[current]}</div>`;
 }
 
 function nextQuestion() {
 
-    if (current === 0) {
-        music.play();
-    }
+    if (current === 0) music.play();
 
     current++;
 
-    if (current < backgrounds.length) {
-        updateContent();
+    if (current < questions.length) {
+        bgImage.style.backgroundImage = `url('${backgrounds[current]}')`;
+        updateQuestion();
     } else {
-
-        bgImage.style.backgroundImage = `url('${backgrounds[backgrounds.length - 1]}')`;
-
         questionBox.innerHTML =
             `<span class="nameStyle">${herName} ❤️</span>
              <div class="questionText">
-                I Love You Forever 💖<br>
-                You Are My Everything ✨
+             She Said YESSSS 💖✨ Forever Begins Now!
              </div>`;
-
         document.getElementById("buttons").style.display = "none";
         startFireworks();
+        startBalloons();
     }
 }
 
-//////////////////////////////
-// FUNNY MOVING NO BUTTON
-//////////////////////////////
-
+/* Moving No Button */
 const noBtn = document.getElementById("noBtn");
-
 const funnyTexts = [
     "Vendam 🙅‍♀️",
     "Vendam nu sonna vida maata 😭",
     "Athan solran la adanga maata 😤",
     "Vendam valikuthu 😵",
     "Please daaa vendam 🥺",
-    "Enna torture panra 😩",
     "No nu sonna kekka maatiya 😅"
 ];
 
 let textIndex = 0;
 
 noBtn.addEventListener("mouseover", function() {
-
     noBtn.innerText = funnyTexts[textIndex];
     textIndex = (textIndex + 1) % funnyTexts.length;
 
     const x = Math.random() * (window.innerWidth - 200);
     const y = Math.random() * (window.innerHeight - 100);
-
     noBtn.style.left = x + "px";
     noBtn.style.top = y + "px";
 });
 
-//////////////////////////////
-// FIREWORKS
-//////////////////////////////
-
+/* FIREWORK ENGINE */
 const canvas = document.getElementById("fireworks");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-function startFireworks() {
+let particles = [];
 
-    setInterval(() => {
+function createFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height / 2;
 
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height / 2;
-
-        for (let i = 0; i < 80; i++) {
-
-            const angle = Math.random() * 2 * Math.PI;
-            const speed = Math.random() * 5 + 2;
-
-            const particle = {
-                x: x,
-                y: y,
-                dx: Math.cos(angle) * speed,
-                dy: Math.sin(angle) * speed,
-                life: 60
-            };
-
-            animateParticle(particle);
-        }
-
-    }, 1000);
+    for (let i = 0; i < 100; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            angle: Math.random() * 2 * Math.PI,
+            speed: Math.random() * 5 + 2,
+            life: 100
+        });
+    }
 }
 
-function animateParticle(p) {
+function startFireworks() {
+    setInterval(createFirework, 800);
+    animateFireworks();
+}
 
-    function update() {
+function animateFireworks() {
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        p.x += p.dx;
-        p.y += p.dy;
+    particles.forEach((p, index) => {
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed;
         p.life--;
 
         ctx.beginPath();
@@ -284,12 +258,23 @@ function animateParticle(p) {
         ctx.fillStyle = `hsl(${Math.random()*360},100%,60%)`;
         ctx.fill();
 
-        if (p.life > 0) {
-            requestAnimationFrame(update);
-        }
-    }
+        if (p.life <= 0) particles.splice(index, 1);
+    });
 
-    update();
+    requestAnimationFrame(animateFireworks);
+}
+
+/* Floating Heart Balloons */
+function startBalloons() {
+    setInterval(() => {
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.innerHTML = "💖";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.fontSize = (20 + Math.random() * 30) + "px";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 8000);
+    }, 400);
 }
 
 </script>
