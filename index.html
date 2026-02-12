@@ -14,23 +14,22 @@ body {
     text-align: center;
     color: white;
     overflow: hidden;
-    background: black; /* fallback (never white) */
+    background: black;
 }
 
-/* Background with default image (NO WHITE FLASH) */
+/* Background */
 .bg-image {
     position: fixed;
     width: 100%;
     height: 100%;
-    background-image: url('bg1.jpg'); /* first image loads immediately */
+    background-image: url('bg1.jpg');
     background-size: cover;
     background-position: center;
     filter: blur(8px) brightness(0.6);
-    transition: background-image 1s ease-in-out;
+    transition: all 1s ease-in-out;
     z-index: -3;
 }
 
-/* Soft overlay */
 .overlay {
     position: fixed;
     width: 100%;
@@ -39,6 +38,7 @@ body {
     z-index: -2;
 }
 
+/* Main container */
 .container {
     padding: 40px 20px;
     max-width: 900px;
@@ -49,11 +49,11 @@ body {
 
 .nameStyle {
     font-family: 'Great Vibes', cursive;
-    font-size: 70px;
+    font-size: clamp(40px, 8vw, 70px);
 }
 
 .questionText {
-    font-size: 26px;
+    font-size: clamp(18px, 4vw, 26px);
     line-height: 1.8;
     text-shadow: 2px 2px 15px rgba(0,0,0,0.9);
 }
@@ -66,6 +66,11 @@ button {
     margin: 15px;
     cursor: pointer;
     font-weight: 600;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.1);
 }
 
 .yes {
@@ -79,6 +84,16 @@ button {
     position: absolute;
 }
 
+/* Funny note */
+.funny-note {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffeaa7;
+    min-height: 30px;
+}
+
+/* Canvas */
 canvas {
     position: fixed;
     top: 0;
@@ -87,16 +102,23 @@ canvas {
     z-index: 1;
 }
 
-/* Floating heart balloons */
+/* Floating hearts */
 .heart {
     position: fixed;
     bottom: -50px;
-    animation: floatUp 8s linear infinite;
+    animation: floatUp linear forwards;
 }
 
 @keyframes floatUp {
-    0% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(-110vh); opacity: 0; }
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(-110vh); opacity: 0; }
+}
+
+@media(max-width:600px){
+    button {
+        width: 80%;
+        font-size: 16px;
+    }
 }
 
 </style>
@@ -105,7 +127,7 @@ canvas {
 <body>
 
 <div class="bg-image" id="bgImage"></div>
-<div class="overlay"></div>
+<div class="overlay" id="overlay"></div>
 
 <audio id="bgMusic" loop>
     <source src="music.mp3" type="audio/mpeg">
@@ -119,31 +141,25 @@ canvas {
         <button class="yes" onclick="nextQuestion()">Yes My Love 💕</button>
         <button class="no" id="noBtn">No 🙈</button>
     </div>
+    <div class="funny-note" id="funnyNote"></div>
 </div>
 
 <script>
 
 const bgImage = document.getElementById("bgImage");
+const overlay = document.getElementById("overlay");
 const music = document.getElementById("bgMusic");
 
-/* Background Images */
-const backgrounds = [
-    "bg1.jpg",
-    "bg2.jpg",
-    "bg3.jpg",
-    "bg4.jpg",
-    "bg5.jpg",
-    "bg6.jpg"
-];
+const backgrounds = ["bg1.jpg","bg2.jpg","bg3.jpg","bg4.jpg","bg5.jpg","bg6.jpg"];
 
-/* PRELOAD images for smooth transitions */
+/* Preload */
 backgrounds.forEach(src => {
     const img = new Image();
     img.src = src;
 });
 
 const params = new URLSearchParams(window.location.search);
-let herName = params.get("name") || "My Love";
+let herName = params.get("name") || "PARKAVI";
 
 herName = herName.split(" ")
                  .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -153,16 +169,14 @@ const questionBox = document.getElementById("question");
 
 const questions = [
     `Hey ${herName}, Are you ready for something magical?`,
-    `Do you know how special you are to me, ${herName}? ✨`,
-    `Do You promise to grow old with me 💕`,
-    `Will you stay beside me forever? 🌸`,
+    `Will you choose me again in every lifetime ?, ${herName}? ✨`,
+    `Do you still get butterflies when you see me smile? 💕`,
+    `Will you stay beside me forever and hold my hand even during tough days? 🌸`,
     `Will you love me more every single day? 💖`,
     `Will You Be My Forever Valentine, ${herName}? 💍❤️`
 ];
 
 let current = 0;
-
-/* Set first question */
 updateQuestion();
 
 function updateQuestion() {
@@ -178,48 +192,77 @@ function nextQuestion() {
     current++;
 
     if (current < questions.length) {
-        bgImage.style.backgroundImage = `url('${backgrounds[current]}')`;
-        updateQuestion();
-    } else {
+
+    bgImage.style.backgroundImage = `url('${backgrounds[current]}')`;
+
+    // Reset No button for every new question
+    noBtn.innerText = "No 🙈";
+    textIndex = 0;
+    noBtn.style.left = "";
+    noBtn.style.top = "";
+
+    updateQuestion();
+} else {
+
+        bgImage.style.backgroundImage = "url('bg1.jpg')";
+        bgImage.style.filter = "none";
+        overlay.style.display = "none";
+
         questionBox.innerHTML =
             `<span class="nameStyle">${herName} ❤️</span>
              <div class="questionText">
              She Said YESSSS 💖✨ Forever Begins Now!
              </div>`;
+
         document.getElementById("buttons").style.display = "none";
+        document.getElementById("funnyNote").style.display = "none";
+
         startFireworks();
         startBalloons();
     }
 }
 
-/* Moving No Button */
+/* Moving No Button + Funny Notes */
+
 const noBtn = document.getElementById("noBtn");
+
 const funnyTexts = [
     "Vendam 🙅‍♀️",
     "Vendam nu sonna vida maata 😭",
     "Athan solran la adanga maata 😤",
     "Vendam valikuthu 😵",
     "Please daaa vendam 🥺",
+    "Enna torture panra 😩",
     "No nu sonna kekka maatiya 😅"
 ];
 
 let textIndex = 0;
 
 noBtn.addEventListener("mouseover", function() {
+
+    // Change text in loop
     noBtn.innerText = funnyTexts[textIndex];
     textIndex = (textIndex + 1) % funnyTexts.length;
 
+    // Move randomly
     const x = Math.random() * (window.innerWidth - 200);
     const y = Math.random() * (window.innerHeight - 100);
+
     noBtn.style.left = x + "px";
     noBtn.style.top = y + "px";
 });
 
-/* FIREWORK ENGINE */
+/* FIREWORKS */
+
 const canvas = document.getElementById("fireworks");
 const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+
+function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 let particles = [];
 
@@ -227,12 +270,12 @@ function createFirework() {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height / 2;
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 150; i++) {
         particles.push({
-            x: x,
-            y: y,
+            x,
+            y,
             angle: Math.random() * 2 * Math.PI,
-            speed: Math.random() * 5 + 2,
+            speed: Math.random() * 6 + 2,
             life: 100
         });
     }
@@ -245,8 +288,7 @@ function startFireworks() {
 
 function animateFireworks() {
 
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     particles.forEach((p, index) => {
         p.x += Math.cos(p.angle) * p.speed;
@@ -254,7 +296,7 @@ function animateFireworks() {
         p.life--;
 
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
         ctx.fillStyle = `hsl(${Math.random()*360},100%,60%)`;
         ctx.fill();
 
@@ -264,17 +306,18 @@ function animateFireworks() {
     requestAnimationFrame(animateFireworks);
 }
 
-/* Floating Heart Balloons */
+/* Heart Balloons */
 function startBalloons() {
     setInterval(() => {
         const heart = document.createElement("div");
         heart.classList.add("heart");
         heart.innerHTML = "💖";
         heart.style.left = Math.random() * 100 + "vw";
-        heart.style.fontSize = (20 + Math.random() * 30) + "px";
+        heart.style.fontSize = (30 + Math.random() * 40) + "px";
+        heart.style.animationDuration = (6 + Math.random() * 4) + "s";
         document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 8000);
-    }, 400);
+        setTimeout(() => heart.remove(), 10000);
+    }, 300);
 }
 
 </script>
